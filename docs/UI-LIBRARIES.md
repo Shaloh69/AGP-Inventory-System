@@ -60,6 +60,27 @@ theme libraries causes styling conflicts.
 | **QuestPDF** | `QuestPDF` | Community licence (free for small revenue) | Generate printable PDF reports from C# |
 | **ClosedXML** | `ClosedXML` | MIT | Export data to Excel |
 
+## Screenshots
+
+**Left:** the library's page in our app (menu → UI LIBRARIES; code in
+[`client/AppClient/Pages/Libraries`](../client/AppClient/Pages/Libraries) and [`client/AppClient.WpfPages`](../client/AppClient.WpfPages)).
+**Right:** a template from the library's own GitHub page or website.
+
+| Library | Page in our app | Template online |
+|---------|-----------------|-----------------|
+| MaterialSkin.2 | ![](screenshots/hello-world/WinForms.MaterialSkin2.png) | ![](screenshots/online-templates/winforms-materialskin2.png) |
+| ReaLTaiizor | ![](screenshots/hello-world/WinForms.ReaLTaiizor.png) | ![](screenshots/online-templates/winforms-realtaiizor.png) |
+| Krypton Toolkit | ![](screenshots/hello-world/WinForms.Krypton.png) | ![](screenshots/online-templates/winforms-krypton.png) |
+| MaterialDesignInXaml | ![](screenshots/hello-world/Wpf.MaterialDesign.png) | ![](screenshots/online-templates/wpf-materialdesign.png) |
+| WPF UI | ![](screenshots/hello-world/Wpf.WpfUi.png) | ![](screenshots/online-templates/wpf-wpfui.png) |
+| MahApps.Metro | ![](screenshots/hello-world/Wpf.MahApps.png) | ![](screenshots/online-templates/wpf-mahapps.png) |
+| HandyControl | ![](screenshots/hello-world/Wpf.HandyControl.png) | ![](screenshots/online-templates/wpf-handycontrol.png) |
+| Avalonia UI | – | ![](screenshots/online-templates/crossplatform-avalonia.png) |
+| MudBlazor | – | ![](screenshots/online-templates/web-mudblazor.png) |
+
+> Note: the old `materialdesigninxaml.net` domain currently redirects to an unrelated site.
+> Use the GitHub repository (github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit) instead.
+
 ## Recommended beginner starter kits
 
 **WinForms kit**

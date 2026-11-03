@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AppClient.WpfPages/AppClient.WpfPages.csproj" />
+  <Project Path="AppClient/AppClient.csproj" />
+</Solution>

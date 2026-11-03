@@ -1,54 +1,66 @@
 # Server – Node.js + Express (hosted on Render)
 
-The REST API that sits between the C# app and the PostgreSQL database.
+The REST API between the C# app and the PostgreSQL database. It already has one complete,
+tested feature – **products** – that you copy for every new feature.
 
-> Not built yet. Follow the steps below (and **Phase 2–3** of
-> [../docs/Beginners-Guide.pdf](../docs/Beginners-Guide.pdf)).
-
-## Folder purpose
-
-| Folder | What goes inside | Example file |
-|--------|------------------|--------------|
-| `src/config/` | Database connection and app settings | `db.js` |
-| `src/routes/` | Maps URLs to controller functions | `task.routes.js` |
-| `src/controllers/` | Reads the request, calls the model, sends the response | `task.controller.js` |
-| `src/models/` | SQL queries for one table | `task.model.js` |
-| `src/middleware/` | Runs before/after routes (auth, errors, logging) | `errorHandler.js` |
-| `src/utils/` | Small helpers | `password.js` |
-| `certs/` | Aiven `ca.pem` (ignored by Git) | `ca.pem` |
-| `src/index.js` | Entry point: creates the app and starts listening | – |
-
-## Request flow
-
-```
-C# app ──▶ route ──▶ middleware ──▶ controller ──▶ model (SQL) ──▶ PostgreSQL
-   ◀──────────────────── JSON response ◀────────────────────────────┘
-```
-
-## First-time setup (local)
+## Run it
 
 ```bash
-cd server
-npm init -y
-npm install express pg dotenv cors
-# optional, later: npm install bcrypt jsonwebtoken
+# from the repository root
+run-dev.bat setup      # first time: npm install + create tables + sample data
+run-dev.bat server     # start on http://localhost:3000 (restarts when you save a file)
 ```
 
-Add scripts to `package.json`:
+Or by hand inside `server/`:
 
-```json
-"scripts": {
-  "start": "node src/index.js",
-  "dev": "node --watch src/index.js"
-}
+```bash
+npm install
+npm run db:migrate     # runs database/migrations/*.sql that have not run yet
+npm run db:seed        # adds database/seeds/*.sql sample data (safe to repeat)
+npm run dev            # start with auto-restart   (npm start = without)
 ```
 
-Then:
+Before the first run: copy `.env.example` to `.env` and fill in your Aiven values, and save
+the Aiven CA certificate as `certs/ca.pem`.
 
-1. Copy `.env.example` to `.env` and fill in your Aiven values.
-2. Put the Aiven **CA certificate** in `certs/ca.pem`.
-3. Create `src/index.js` and `src/config/db.js` (code is in the guide).
-4. Run `npm run dev` and open `http://localhost:3000/api/health`.
+## Folder map
+
+| File | Job |
+|------|-----|
+| `src/index.js` | Entry point: loads `.env`, starts listening |
+| `src/app.js` | Builds the app: middleware → routes → error handlers |
+| `src/config/db.js` | PostgreSQL connection pool (SSL for Aiven) |
+| `src/routes/product.routes.js` | URL + method → controller function |
+| `src/controllers/product.controller.js` | Reads the request, validates, calls the model, sends JSON |
+| `src/models/product.model.js` | **All SQL** for the `products` table |
+| `src/utils/validateProduct.js` | A small pure function that checks input |
+| `src/middleware/errorHandler.js` | Turns errors into JSON (409 duplicate, 400 bad id, 500) |
+| `src/middleware/notFound.js` | 404 for unknown URLs |
+| `src/scripts/migrate.js` · `seed.js` | `npm run db:migrate` · `npm run db:seed` |
+
+## Endpoints
+
+| Method | URL | Body | Success |
+|--------|-----|------|---------|
+| GET | `/api/health` | – | `{ "status": "ok" }` |
+| GET | `/api/health/db` | – | `{ "status": "ok", "databaseTime": … }` |
+| GET | `/api/products` | – | 200 + array (add `?search=ham` to filter) |
+| GET | `/api/products/:id` | – | 200 + product, or 404 |
+| POST | `/api/products` | `{ "name", "quantity", "price" }` | 201 + new product |
+| PUT | `/api/products/:id` | `{ "name", "quantity", "price" }` | 200 + updated product |
+| DELETE | `/api/products/:id` | – | 204 |
+
+Errors always look like `{ "message": "..." }` – 400 invalid input, 404 not found,
+409 name already exists, 500 server error.
+
+## Add a new feature (e.g. suppliers)
+
+1. `database/migrations/002_create_suppliers_table.sql` → `npm run db:migrate`
+2. `src/models/supplier.model.js` (copy `product.model.js`, change the SQL)
+3. `src/controllers/supplier.controller.js`
+4. `src/routes/supplier.routes.js`
+5. In `src/app.js`: `app.use('/api/suppliers', require('./routes/supplier.routes'));`
+6. Test with Postman / Bruno, then add the C# side (see `client/README.md`).
 
 ## Deploying to Render
 
@@ -56,30 +68,17 @@ Then:
 |----------------|-------|
 | Service type   | Web Service |
 | Root Directory | `server` |
-| Runtime        | Node |
 | Build Command  | `npm install` |
 | Start Command  | `npm start` |
-| Environment    | `DATABASE_URL`, `DB_CA_PATH=/etc/secrets/ca.pem`, `JWT_SECRET` |
+| Health Check   | `/api/health` |
+| Environment    | `DATABASE_URL`, `DB_CA_PATH=/etc/secrets/ca.pem` |
 | Secret File    | `ca.pem` (paste the Aiven certificate) |
 
-Render's free plan **sleeps after ~15 minutes without traffic**; the first request
-afterwards can take up to a minute. The C# app should use a long timeout and show a
-"Connecting…" message.
-
-## API naming convention
-
-| Action | Method | URL |
-|--------|--------|-----|
-| List all | `GET` | `/api/tasks` |
-| Get one | `GET` | `/api/tasks/:id` |
-| Create | `POST` | `/api/tasks` |
-| Update | `PUT` | `/api/tasks/:id` |
-| Delete | `DELETE` | `/api/tasks/:id` |
-
-Use plural nouns, lowercase, no verbs in URLs. Always return JSON.
+Run `npm run db:migrate` once against Aiven from your PC (with the Aiven `.env`) to create the tables.
+Render's free plan sleeps after ~15 minutes idle; the first request can take up to a minute.
 
 ## Rules
 
 - Never put passwords in code – use `process.env.*`.
-- Always use parameterised queries: `pool.query('... WHERE id = $1', [id])`.
+- SQL only in models, always with `$1, $2` placeholders.
 - Never store plain passwords – hash them with `bcrypt`.

@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGP Start Here</title>
+<meta name="description" content="Onboarding page for the AGP Inventory System team: C# frontend, Express API on Render, PostgreSQL on Aiven.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%235b4bff'/%3E%3Ctext x='16' y='21' font-size='12' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'%3EAGP%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f7fb;
+  --surface: #ffffff;
+  --surface-2: #f0f1f7;
+  --ink: #141626;
+  --muted: #5d627a;
+  --line: #e2e4ee;
+  --brand: #5b4bff;
+  --brand-2: #00b8a9;
+  --brand-3: #ff5d8f;
+  --brand-soft: #ecebff;
+  --ok: #18a058;
+  --code-bg: #12131f;
+  --code-ink: #e8e9f5;
+  --shadow: 0 1px 2px rgba(20,22,38,.06), 0 8px 28px rgba(20,22,38,.08);
+  --radius: 18px;
+  --hero-ink: #ffffff;
+  --hero-bg: #0e0f1d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c0d18; --surface: #151729; --surface-2: #1c1f35; --ink: #eef0fb; --muted: #a3a8c3;
+    --line: #262a45; --brand: #8b80ff; --brand-soft: #232048; --code-bg: #0a0b14;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c0d18; --surface: #151729; --surface-2: #1c1f35; --ink: #eef0fb; --muted: #a3a8c3;
+  --line: #262a45; --brand: #8b80ff; --brand-soft: #232048; --code-bg: #0a0b14;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, pre, .mono { font-family: "JetBrains Mono", Consolas, monospace; }
+img { max-width: 100%; display: block; }
+.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+section { padding: 96px 0; scroll-margin-top: 64px; }
+.kicker { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); margin: 0 0 10px; }
+h2 { font-size: clamp(28px, 4vw, 42px); line-height: 1.15; margin: 0 0 14px; letter-spacing: -.02em; }
+.lead { color: var(--muted); font-size: 18px; max-width: 680px; margin: 0 0 40px; }
+
+/* ---------- nav ---------- */
+nav.top {
+  position: fixed; inset: 0 0 auto 0; z-index: 50; height: 64px;
+  display: flex; align-items: center;
+  background: color-mix(in srgb, var(--hero-bg) 55%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  transition: background .3s;
+}
+nav.top.scrolled { background: color-mix(in srgb, var(--hero-bg) 88%, transparent); }
+nav.top .wrap { display: flex; align-items: center; gap: 24px; }
+.logo { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 800; letter-spacing: -.01em; }
+.logo:hover { text-decoration: none; }
+.logo-mark {
+  width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-size: 13px;
+  background: conic-gradient(from 200deg, var(--brand), var(--brand-2), var(--brand-3), var(--brand));
+  color: #fff; box-shadow: 0 4px 16px rgba(91,75,255,.5);
+}
+.nav-links { display: flex; gap: 22px; margin-left: auto; }
+.nav-links a { color: rgba(255,255,255,.75); font-size: 14px; font-weight: 500; }
+.nav-links a:hover { color: #fff; text-decoration: none; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06); color: #fff; cursor: pointer; display: grid; place-items: center;
+}
+.icon-btn:hover { background: rgba(255,255,255,.14); }
+@media (max-width: 860px) { .nav-links { display: none; } .theme-btn { margin-left: auto; } }
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative; min-height: 100vh; padding: 140px 0 100px; overflow: hidden;
+  background: var(--hero-bg); color: var(--hero-ink); display: flex; align-items: center;
+}
+.blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; animation: float 18s ease-in-out infinite; }
+.blob.b1 { width: 520px; height: 520px; background: #5b4bff; top: -120px; left: -120px; }
+.blob.b2 { width: 420px; height: 420px; background: #00b8a9; bottom: -140px; right: 8%; animation-delay: -6s; }
+.blob.b3 { width: 360px; height: 360px; background: #ff5d8f; top: 20%; right: -100px; animation-delay: -12s; opacity: .4; }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, 40px) scale(1.08); }
+  66% { transform: translate(-40px, 60px) scale(.94); }
+}
+.grid-bg {
+  position: absolute; inset: 0; opacity: .14;
+  background-image: linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 20%, transparent 70%);
+}
+.hero .wrap { position: relative; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); font-size: 13px; color: rgba(255,255,255,.85);
+}
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #3ddc97; box-shadow: 0 0 0 0 rgba(61,220,151,.7); animation: pulse 2s infinite; margin-left: 6px; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(61,220,151,0); } 100% { box-shadow: 0 0 0 0 rgba(61,220,151,0); } }
+.hero h1 { font-size: clamp(44px, 8vw, 96px); line-height: 1.02; letter-spacing: -.035em; margin: 26px 0 18px; font-weight: 800; }
+.wave { display: inline-block; transform-origin: 70% 70%; animation: wave 2.4s ease-in-out infinite; }
+@keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(14deg); } 20% { transform: rotate(-8deg); } 40% { transform: rotate(-4deg); } 50% { transform: rotate(10deg); } }
+.grad {
+  background: linear-gradient(90deg, #a79dff, #5be3d6, #ff8fb1, #a79dff); background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 8s linear infinite;
+}
+@keyframes shimmer { to { background-position: 300% 0; } }
+.typed { font-size: clamp(18px, 2.4vw, 24px); color: rgba(255,255,255,.78); min-height: 1.6em; margin: 0 0 36px; }
+.typed .caret { display: inline-block; width: 2px; height: 1.1em; background: #5be3d6; vertical-align: -3px; margin-left: 3px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.cta { display: flex; flex-wrap: wrap; gap: 14px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 14px; font-weight: 700; font-size: 15px;
+  transition: transform .2s, box-shadow .2s, background .2s; border: 0; cursor: pointer; font-family: inherit;
+}
+.btn:hover { text-decoration: none; transform: translateY(-2px); }
+.btn.primary { background: linear-gradient(135deg, #5b4bff, #8a4bff); color: #fff; box-shadow: 0 10px 30px rgba(91,75,255,.45); }
+.btn.primary:hover { box-shadow: 0 14px 38px rgba(91,75,255,.6); }
+.btn.ghost { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.18); }
+.btn.ghost:hover { background: rgba(255,255,255,.15); }
+.stack { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 54px; }
+.chip {
+  padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  opacity: 0; transform: translateY(12px); animation: rise .6s forwards;
+}
+@keyframes rise { to { opacity: 1; transform: none; } }
+.scroll-hint { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); color: rgba(255,255,255,.5); font-size: 12px; text-align: center; }
+.scroll-hint .mouse { width: 22px; height: 34px; border: 2px solid rgba(255,255,255,.35); border-radius: 12px; margin: 0 auto 8px; position: relative; }
+.scroll-hint .mouse::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 7px; margin-left: -1.5px; border-radius: 2px; background: #fff; animation: wheel 1.6s infinite; }
+@keyframes wheel { to { transform: translateY(10px); opacity: 0; } }
+@media (max-height: 820px) { .scroll-hint { display: none; } }
+
+/* ---------- reveal ---------- */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---------- architecture ---------- */
+.arch { display: grid; grid-template-columns: 1fr 140px 1fr 140px 1fr; align-items: center; }
+.node {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 22px; box-shadow: var(--shadow);
+  text-align: center; position: relative; transition: transform .3s;
+}
+.node:hover { transform: translateY(-6px); }
+.node .ico { width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 14px; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px; }
+.node h3 { margin: 0 0 4px; font-size: 18px; }
+.node .where { font-size: 13px; color: var(--muted); }
+.node .folder { display: inline-block; margin-top: 12px; font-size: 12px; padding: 4px 10px; border-radius: 8px; background: var(--surface-2); color: var(--ink); }
+.track { position: relative; height: 70px; }
+.track::before, .track::after { content: ""; position: absolute; left: 8px; right: 8px; border-top: 2px dashed var(--line); }
+.track::before { top: 24px; } .track::after { top: 46px; }
+.track .label { position: absolute; left: 0; right: 0; top: -2px; text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; }
+.packet { position: absolute; width: 12px; height: 12px; border-radius: 50%; top: 19px; left: 8px; animation: go 2.4s cubic-bezier(.5,0,.5,1) infinite; }
+.packet.back { top: 41px; animation-name: back; animation-delay: 1.2s; }
+@keyframes go { 0% { left: 8px; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: calc(100% - 20px); opacity: 0; } }
+@keyframes back { 0% { left: calc(100% - 20px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: 8px; opacity: 0; } }
+.rule-banner {
+  margin-top: 34px; padding: 16px 20px; border-radius: 14px; display: flex; gap: 12px; align-items: center;
+  background: color-mix(in srgb, var(--brand-3) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--brand-3) 35%, transparent);
+  font-weight: 600;
+}
+@media (max-width: 860px) {
+  .arch { grid-template-columns: 1fr; }
+  .track { height: 90px; width: 70px; margin: 0 auto; }
+  .track::before, .track::after { top: 8px; bottom: 8px; left: auto; right: auto; border-top: 0; border-left: 2px dashed var(--line); }
+  .track::before { left: 24px; } .track::after { left: 46px; }
+  .track .label { top: 50%; left: 64px; right: auto; transform: translateY(-50%); white-space: nowrap; text-align: left; }
+  .packet { left: 19px; top: 8px; animation-name: goV; }
+  .packet.back { left: 41px; top: auto; animation-name: backV; }
+  @keyframes goV { 0% { top: 8px; opacity: 0; } 10%, 90% { opacity: 1; } 100% { top: calc(100% - 20px); opacity: 0; } }
+  @keyframes backV { 0% { top: calc(100% - 20px); opacity: 0; } 10%, 90% { opacity: 1; } 100% { top: 8px; opacity: 0; } }
+}
+
+/* ---------- first hour checklist ---------- */
+.first { display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start; }
+.progress-card { position: sticky; top: 90px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); text-align: center; }
+.ring { width: 160px; height: 160px; margin: 0 auto 16px; position: relative; }
+.ring svg { transform: rotate(-90deg); }
+.ring .val { position: absolute; inset: 0; display: grid; place-items: center; font-size: 34px; font-weight: 800; }
+.ring circle { fill: none; stroke-width: 12; }
+.ring .bg { stroke: var(--surface-2); }
+.ring .fg { stroke: url(#ringGrad); stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.2,.7,.2,1); }
+.steps { display: grid; gap: 14px; }
+.step {
+  display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start; padding: 20px; border-radius: 16px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); transition: border-color .25s, transform .25s, background .25s;
+}
+.step:hover { transform: translateX(4px); border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); }
+.step input { position: absolute; opacity: 0; pointer-events: none; }
+.check { width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--line); display: grid; place-items: center; font-weight: 800; color: var(--muted); transition: all .3s; }
+.step.done { background: color-mix(in srgb, var(--ok) 7%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.step.done .check { background: var(--ok); border-color: var(--ok); color: #fff; animation: pop .35s; }
+@keyframes pop { 50% { transform: scale(1.2); } }
+.step h4 { margin: 0 0 4px; font-size: 16px; }
+.step p { margin: 0; color: var(--muted); font-size: 14px; }
+.step.done h4 { text-decoration: line-through; text-decoration-color: var(--ok); }
+@media (max-width: 860px) { .first { grid-template-columns: 1fr; } .progress-card { position: static; } }
+
+/* ---------- roadmap ---------- */
+.timeline { position: relative; padding-left: 36px; }
+.timeline::before { content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.timeline .bar { position: absolute; left: 11px; top: 6px; width: 2px; height: 0; background: linear-gradient(var(--brand), var(--brand-2)); transition: height .2s linear; }
+.phase { position: relative; margin-bottom: 26px; }
+.phase::before {
+  content: ""; position: absolute; left: -31px; top: 22px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--brand); transition: background .3s, transform .3s;
+}
+.phase.in::before { background: var(--brand); transform: scale(1.15); }
+.phase .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); display: grid; grid-template-columns: 1fr auto; gap: 6px 20px; }
+.phase .week { font-size: 12px; font-weight: 700; color: var(--brand); background: var(--brand-soft); padding: 4px 10px; border-radius: 8px; height: fit-content; white-space: nowrap; }
+.phase h4 { margin: 0; font-size: 18px; }
+.phase p { margin: 0; color: var(--muted); font-size: 14px; grid-column: 1 / -1; }
+.phase .done-when { grid-column: 1 / -1; font-size: 13px; margin-top: 6px; }
+.phase .done-when b { color: var(--ok); }
+
+/* ---------- ui kits ---------- */
+.toolbar { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.seg { display: inline-flex; padding: 4px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); position: relative; }
+.seg button { position: relative; z-index: 1; border: 0; background: none; padding: 10px 18px; border-radius: 10px; font: 600 14px "Plus Jakarta Sans", sans-serif; color: var(--muted); cursor: pointer; transition: color .25s; }
+.seg button.active { color: var(--ink); }
+.seg .thumb { position: absolute; top: 4px; bottom: 4px; border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); transition: left .35s cubic-bezier(.2,.7,.2,1), width .35s cubic-bezier(.2,.7,.2,1); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filters button { border: 1px solid var(--line); background: var(--surface); color: var(--muted); padding: 8px 14px; border-radius: 999px; font: 600 13px "Plus Jakarta Sans", sans-serif; cursor: pointer; transition: all .2s; }
+.filters button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.kits { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 22px; }
+.kit {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; transition: transform .3s, box-shadow .3s, opacity .3s;
+}
+.kit:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(20,22,38,.16); }
+.kit.hide { display: none; }
+.shot { aspect-ratio: 16 / 10.5; background: var(--surface-2); overflow: hidden; cursor: zoom-in; position: relative; border-bottom: 1px solid var(--line); }
+.shot img { width: 100%; height: 100%; object-fit: contain; transition: transform .6s cubic-bezier(.2,.7,.2,1), opacity .35s; padding: 10px; }
+.kit:hover .shot img { transform: scale(1.04); }
+.shot img.swap { opacity: 0; }
+.badge-rec { position: absolute; bottom: 12px; right: 12px; z-index: 1; box-shadow: 0 4px 14px rgba(91,75,255,.4); background: linear-gradient(135deg, #5b4bff, #00b8a9); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+.kit .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.kit .title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.kit h3 { margin: 0; font-size: 18px; }
+.fw { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 7px; background: var(--brand-soft); color: var(--brand); white-space: nowrap; }
+.kit .meta { font-size: 13px; color: var(--muted); margin: 0; }
+.cmd {
+  margin-top: auto; display: flex; align-items: center; gap: 8px; background: var(--code-bg); color: var(--code-ink);
+  border-radius: 10px; padding: 8px 8px 8px 12px; font-size: 12px; overflow: hidden;
+}
+.cmd code { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.copy {
+  border: 0; border-radius: 8px; padding: 6px 10px; font: 600 12px "Plus Jakarta Sans", sans-serif; cursor: pointer;
+  background: rgba(255,255,255,.1); color: #fff; transition: background .2s;
+}
+.copy:hover { background: rgba(255,255,255,.2); }
+.copy.ok { background: var(--ok); }
+.kit .links { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-size: 13px; font-weight: 600; }
+.kit .links a { white-space: nowrap; }
+.kit .links .path { color: var(--muted); font-size: 12px; font-weight: 400; }
+
+/* lightbox */
+dialog.lightbox { border: 0; padding: 0; background: transparent; max-width: min(1100px, 94vw); }
+dialog.lightbox::backdrop { background: rgba(8,9,18,.82); backdrop-filter: blur(6px); }
+dialog.lightbox img { border-radius: 14px; max-height: 84vh; width: auto; margin: auto; box-shadow: 0 30px 80px rgba(0,0,0,.5); animation: zoomIn .35s cubic-bezier(.2,.7,.2,1); }
+dialog.lightbox p { color: #fff; text-align: center; font-weight: 600; margin: 14px 0 0; }
+@keyframes zoomIn { from { transform: scale(.92); opacity: 0; } }
+
+/* ---------- team ---------- */
+.team { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.member {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 22px; text-align: center; box-shadow: var(--shadow);
+  transition: transform .3s; transform-style: preserve-3d;
+}
+.avatar { width: 92px; height: 92px; border-radius: 50%; margin: 0 auto 14px; padding: 3px; background: conic-gradient(var(--brand), var(--brand-2), var(--brand-3), var(--brand)); }
+.avatar img { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--surface); object-fit: cover; background: var(--surface-2); }
+.member h4 { margin: 0; font-size: 17px; }
+.member .gh { font-size: 13px; }
+.member .role { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: var(--surface-2); color: var(--muted); }
+
+/* ---------- commands ---------- */
+.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 0; flex-wrap: wrap; }
+.tabs button { border: 0; background: none; padding: 12px 18px; font: 600 14px "Plus Jakarta Sans", sans-serif; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button.active { color: var(--ink); border-color: var(--brand); }
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp .4s; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } }
+.term { background: var(--code-bg); border-radius: 0 0 var(--radius) var(--radius); padding: 0; overflow: hidden; box-shadow: var(--shadow); }
+.term .bar-top { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: rgba(255,255,255,.04); }
+.term .bar-top i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.term .bar-top span { margin-left: 10px; color: rgba(255,255,255,.5); font-size: 12px; }
+.term .bar-top .copy { margin-left: auto; }
+.term pre { margin: 0; padding: 20px 22px 24px; color: var(--code-ink); font-size: 14px; line-height: 1.75; overflow-x: auto; }
+.term .c { color: #7d84a8; }
+.term .p { color: #5be3d6; }
+
+/* ---------- rules ---------- */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.rule .n { font-size: 54px; font-weight: 800; line-height: 1; position: absolute; right: 12px; top: 6px; color: var(--surface-2); }
+.rule h4 { margin: 0 0 6px; position: relative; font-size: 16px; }
+.rule p { margin: 0; color: var(--muted); font-size: 14px; position: relative; }
+
+footer { padding: 50px 0 60px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; }
+
+/* confetti */
+.confetti { position: fixed; top: -10px; width: 9px; height: 14px; z-index: 100; pointer-events: none; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
+
+@media (max-width: 600px) {
+  section { padding: 72px 0; }
+  .kits { grid-template-columns: 1fr; }
+  .phase .card { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top" id="nav">
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="logo-mark">AGP</span> Inventory System</a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#first">First hour</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#kits">UI kits</a>
+      <a href="#team">Team</a>
+      <a href="#commands">Commands</a>
+    </div>
+    <button class="icon-btn theme-btn" id="themeBtn" aria-label="Toggle dark mode" title="Toggle theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="top">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="grid-bg"></div>
+  <div class="wrap">
+    <span class="pill"><span class="dot"></span> AGP Inventory System · Team onboarding</span>
+    <h1>Hey <span class="wave">👋</span><br><span class="grad">you start here.</span></h1>
+    <p class="typed" aria-live="polite"><span id="typed"></span><span class="caret"></span></p>
+    <div class="cta">
+      <a class="btn primary" href="Beginners-Guide.pdf" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></svg>
+        Read the Beginner's Guide
+      </a>
+      <a class="btn ghost" href="https://github.com/Shaloh69/AGP-Inventory-System" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.8.1-.7.1-.7 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>
+        Open on GitHub
+      </a>
+    </div>
+    <div class="stack" id="stack"></div>
+  </div>
+  <div class="scroll-hint"><div class="mouse"></div>scroll</div>
+</header>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how">
+  <div class="wrap">
+    <p class="kicker reveal">The big picture</p>
+    <h2 class="reveal">Three parts, one app.</h2>
+    <p class="lead reveal">The C# app on your PC talks to an Express API on Render. The API is the only part that talks to the PostgreSQL database on Aiven.</p>
+
+    <div class="arch reveal">
+      <div class="node">
+        <div class="ico" style="background:linear-gradient(135deg,#7b5bff,#5b4bff)">C#</div>
+        <h3>Desktop app</h3>
+        <div class="where">WinForms / WPF · runs on the user's PC</div>
+        <span class="folder mono">client/</span>
+      </div>
+      <div class="track"><span class="label">HTTPS · JSON</span><span class="packet" style="background:#5b4bff"></span><span class="packet back" style="background:#00b8a9"></span></div>
+      <div class="node">
+        <div class="ico" style="background:linear-gradient(135deg,#2fbf71,#16884d)">JS</div>
+        <h3>Express API</h3>
+        <div class="where">Node.js · hosted on Render</div>
+        <span class="folder mono">server/</span>
+      </div>
+      <div class="track"><span class="label">SQL · SSL</span><span class="packet" style="background:#16884d"></span><span class="packet back" style="background:#2f6bd3"></span></div>
+      <div class="node">
+        <div class="ico" style="background:linear-gradient(135deg,#4c8dff,#2f5bd3)">PG</div>
+        <h3>PostgreSQL</h3>
+        <div class="where">Database · hosted on Aiven</div>
+        <span class="folder mono">database/</span>
+      </div>
+    </div>
+    <div class="rule-banner reveal">🔒 The C# app never connects to the database directly. Passwords live only on the server.</div>
+  </div>
+</section>
+
+<!-- ================= FIRST HOUR ================= -->
+<section id="first" style="background:var(--surface-2)">
+  <div class="wrap">
+    <p class="kicker reveal">Your first hour</p>
+    <h2 class="reveal">Tick these off, in order.</h2>
+    <p class="lead reveal">Your progress is saved in this browser, so you can come back later.</p>
+    <div class="first">
+      <div class="progress-card reveal">
+        <div class="ring">
+          <svg width="160" height="160" viewBox="0 0 160 160" aria-hidden="true">
+            <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b4bff"/><stop offset="1" stop-color="#00b8a9"/></linearGradient></defs>
+            <circle class="bg" cx="80" cy="80" r="66"/>
+            <circle class="fg" id="ringFg" cx="80" cy="80" r="66" stroke-dasharray="414.7" stroke-dashoffset="414.7"/>
+          </svg>
+          <div class="val" id="ringVal">0%</div>
+        </div>
+        <strong id="ringText">Let's get you set up</strong>
+        <p style="color:var(--muted);font-size:14px;margin:6px 0 0">Stuck? Check Sections 18 and 23 of the guide.</p>
+      </div>
+      <div class="steps" id="steps"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROADMAP ================= -->
+<section id="roadmap">
+  <div class="wrap">
+    <p class="kicker reveal">Roadmap</p>
+    <h2 class="reveal">Eight weeks, eight phases.</h2>
+    <p class="lead reveal">The template already works end to end, so most of the weeks go into features. Each feature copies the products pattern.</p>
+    <div class="timeline" id="timeline"><div class="bar" id="timelineBar"></div></div>
+  </div>
+</section>
+
+<!-- ================= UI KITS ================= -->
+<section id="kits" style="background:var(--surface-2)">
+  <div class="wrap">
+    <p class="kicker reveal">UI libraries for C#</p>
+    <h2 class="reveal">Pick your look.</h2>
+    <p class="lead reveal">Every library has its own <b>page inside our app</b> (open it from the UI LIBRARIES menu, or <span class="mono">run-dev.bat client MahApps</span>). Edit its code using the <i>TRY THIS</i> list at the top of the file. Switch between our pages and each library's <b>own templates</b> from online. Click any screenshot to enlarge it.</p>
+    <div class="toolbar reveal">
+      <div class="seg" id="modeSeg">
+        <span class="thumb"></span>
+        <button class="active" data-mode="hello">Pages in our app</button>
+        <button data-mode="online">Templates online</button>
+      </div>
+      <div class="filters" id="filters">
+        <button class="active" data-f="all">All</button>
+        <button data-f="WinForms">WinForms</button>
+        <button data-f="WPF">WPF</button>
+        <button data-f="Other">Web &amp; cross-platform</button>
+      </div>
+    </div>
+    <div class="kits" id="kitGrid"></div>
+  </div>
+</section>
+
+<!-- ================= TEAM ================= -->
+<section id="team">
+  <div class="wrap">
+    <p class="kicker reveal">The team</p>
+    <h2 class="reveal">Who's building this.</h2>
+    <p class="lead reveal">Agree on roles together (Database, Backend, Frontend, QA / docs), then update the README.</p>
+    <div class="team" id="teamGrid"></div>
+  </div>
+</section>
+
+<!-- ================= COMMANDS ================= -->
+<section id="commands" style="background:var(--surface-2)">
+  <div class="wrap">
+    <p class="kicker reveal">Cheat sheet</p>
+    <h2 class="reveal">Commands you'll use every day.</h2>
+    <p class="lead reveal">Run these from the repository root in a terminal (PowerShell, Command Prompt or the VS Code terminal).</p>
+    <div class="reveal">
+      <div class="tabs" id="cmdTabs"></div>
+      <div id="cmdPanels"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RULES ================= -->
+<section id="rules">
+  <div class="wrap">
+    <p class="kicker reveal">Never forget</p>
+    <h2 class="reveal">The five golden rules.</h2>
+    <div class="rules" id="rulesGrid" style="margin-top:34px"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>AGP Inventory System · C# + Express + PostgreSQL</span>
+    <span><a href="Beginners-Guide.pdf">Beginner's Guide (PDF)</a> · <a href="https://github.com/Shaloh69/AGP-Inventory-System/blob/main/docs/UI-LIBRARIES.md">UI libraries</a> · <a href="https://github.com/Shaloh69/AGP-Inventory-System">GitHub</a></span>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox"><img id="lbImg" alt=""><p id="lbCap"></p></dialog>
+
+<script>
+(() => {
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } }
+  };
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- theme ---------- */
+  const root = document.documentElement;
+  const savedTheme = store.get('agp-theme');
+  if (savedTheme) root.dataset.theme = savedTheme;
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    store.set('agp-theme', root.dataset.theme);
+  });
+
+  /* ---------- nav shadow ---------- */
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 40), { passive: true });
+
+  /* ---------- typed line ---------- */
+  const lines = ['Build the desktop app in C#.', 'Ship the Express API to Render.', 'Store the inventory in PostgreSQL on Aiven.', 'Learn it one phase at a time.'];
+  const typed = document.getElementById('typed');
+  if (reduceMotion) { typed.textContent = lines[0]; }
+  else {
+    let li = 0, ci = 0, deleting = false;
+    (function tick() {
+      const line = lines[li];
+      typed.textContent = line.slice(0, ci);
+      if (!deleting && ci < line.length) { ci++; setTimeout(tick, 55); }
+      else if (!deleting) { deleting = true; setTimeout(tick, 1800); }
+      else if (ci > 0) { ci--; setTimeout(tick, 25); }
+      else { deleting = false; li = (li + 1) % lines.length; setTimeout(tick, 300); }
+    })();
+  }
+
+  /* ---------- stack chips ---------- */
+  ['C# · .NET', 'WinForms / WPF', 'Node.js', 'Express', 'PostgreSQL', 'Render', 'Aiven', 'GitHub'].forEach((t, i) => {
+    const c = document.createElement('span'); c.className = 'chip'; c.textContent = t; c.style.animationDelay = (0.6 + i * 0.08) + 's';
+    document.getElementById('stack').appendChild(c);
+  });
+
+  /* ---------- first hour ---------- */
+  const steps = [
+    ['Install the tools', 'Git, Node.js (LTS), Visual Studio with ".NET desktop development", DBeaver, Postman or Bruno.'],
+    ['Accept the GitHub invite', 'Check your email, accept the invitation to Shaloh69/AGP-Inventory-System.'],
+    ['Clone the repository', 'git clone https://github.com/Shaloh69/AGP-Inventory-System.git'],
+    ['Run the health check', 'In a terminal at the repo root, run: run-dev.bat check. Every tool should show [ok].'],
+    ['Set up the server and database', 'Copy server/.env.example to server/.env, add the Aiven values and ca.pem, then run: run-dev.bat setup.'],
+    ['Read sections 1 to 5 of the guide', 'The big picture, the repository layout and the 8-week plan.'],
+    ['Run the app', 'Run run-dev.bat. Open Products, add a product, then do one TRY THIS exercise on a UI library page.'],
+    ['Pick your role with the team', 'Database, Backend, Frontend or QA / docs. Write it in the README.']
+  ];
+  const doneSet = new Set(JSON.parse(store.get('agp-steps') || '[]'));
+  const stepsEl = document.getElementById('steps');
+  const ringFg = document.getElementById('ringFg'), ringVal = document.getElementById('ringVal'), ringText = document.getElementById('ringText');
+  const C = 2 * Math.PI * 66;
+  function updateRing(celebrate) {
+    const pct = Math.round(doneSet.size / steps.length * 100);
+    ringFg.style.strokeDashoffset = C * (1 - pct / 100);
+    ringVal.textContent = pct + '%';
+    ringText.textContent = pct === 100 ? "You're ready. Welcome aboard! 🎉" : pct > 0 ? 'Nice, keep going…' : "Let's get you set up";
+    if (pct === 100 && celebrate) confetti();
+  }
+  steps.forEach(([title, text], i) => {
+    const label = document.createElement('label');
+    label.className = 'step reveal' + (doneSet.has(i) ? ' done' : '');
+    label.innerHTML = `<input type="checkbox" ${doneSet.has(i) ? 'checked' : ''}><span class="check">${doneSet.has(i) ? '✓' : i + 1}</span><div><h4></h4><p></p></div>`;
+    label.querySelector('h4').textContent = title;
+    label.querySelector('p').textContent = text;
+    const box = label.querySelector('input'), mark = label.querySelector('.check');
+    box.addEventListener('change', () => {
+      box.checked ? doneSet.add(i) : doneSet.delete(i);
+      label.classList.toggle('done', box.checked);
+      mark.textContent = box.checked ? '✓' : i + 1;
+      store.set('agp-steps', JSON.stringify([...doneSet]));
+      updateRing(true);
+    });
+    stepsEl.appendChild(label);
+  });
+  updateRing(false);
+
+  function confetti() {
+    if (reduceMotion) return;
+    const colors = ['#5b4bff', '#00b8a9', '#ff5d8f', '#ffc53d', '#3ddc97'];
+    for (let i = 0; i < 90; i++) {
+      const p = document.createElement('span');
+      p.className = 'confetti';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.background = colors[i % colors.length];
+      p.style.animationDuration = 1.8 + Math.random() * 1.6 + 's';
+      p.style.animationDelay = Math.random() * 0.4 + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 4000);
+    }
+  }
+
+  /* ---------- roadmap ---------- */
+  const phases = [
+    ['Phase 0 · Setup', 'Week 1', 'Install tools, clone the repo, run-dev.bat check, read guide Sections 1–10.', 'everyone has the app running locally'],
+    ['Phase 1 · Plan', 'Week 1', 'Feature list, screen sketches, ERD (products, categories, suppliers, stock movements, users), endpoint list.', 'one-page plan everyone agrees on'],
+    ['Phase 2 · Database', 'Week 2', 'Aiven PostgreSQL service, server/.env + ca.pem, run-dev.bat setup (migrations + sample data).', 'the Products page shows Aiven data'],
+    ['Phase 3 · Deploy', 'Week 2', 'Render Web Service (root: server), environment variables and the ca.pem secret file.', '/api/health/db works on onrender.com'],
+    ['Phase 4 · UI choice', 'Week 2', 'Compare the UI library pages, pick one, restyle the starter pages with it.', 'the team agrees on one library'],
+    ['Phase 5 · Features', 'Weeks 3–6', 'Suppliers, categories, stock in/out, reports – copy the products pattern (guide Section 17), one branch each.', 'each feature works end to end'],
+    ['Phase 6 · Login', 'Weeks 6–7', 'Users table, bcrypt + JWT, a login page (guide Section 22).', 'a wrong password is rejected'],
+    ['Phase 7 · Finish', 'Week 8', 'Testing, fixes, docs, demo rehearsal.', 'final checklist in guide Section 24 complete']
+  ];
+  const tl = document.getElementById('timeline');
+  phases.forEach(([t, w, d, done]) => {
+    const el = document.createElement('div');
+    el.className = 'phase reveal';
+    el.innerHTML = `<div class="card"><h4></h4><span class="week"></span><p></p><div class="done-when"><b>Done when:</b> <span></span></div></div>`;
+    el.querySelector('h4').textContent = t;
+    el.querySelector('.week').textContent = w;
+    el.querySelector('p').textContent = d;
+    el.querySelector('.done-when span').textContent = done;
+    tl.appendChild(el);
+  });
+  const bar = document.getElementById('timelineBar');
+  function growBar() {
+    const r = tl.getBoundingClientRect();
+    const progress = Math.min(1, Math.max(0, (innerHeight * 0.6 - r.top) / r.height));
+    bar.style.height = (progress * (r.height - 12)) + 'px';
+  }
+  addEventListener('scroll', growBar, { passive: true }); growBar();
+
+  /* ---------- UI kits ---------- */
+  const kits = [
+    { name: 'MaterialSkin.2', fw: 'WinForms', lic: 'MIT · free', pkg: 'MaterialSkin.2', hello: 'WinForms.MaterialSkin2', code: 'client/AppClient/Pages/Libraries/MaterialSkinPage.cs', online: 'winforms-materialskin2', url: 'https://github.com/leocb/MaterialSkin', rec: true, note: 'Google Material look, easiest to apply.' },
+    { name: 'ReaLTaiizor', fw: 'WinForms', lic: 'MIT · free', pkg: 'ReaLTaiizor', hello: 'WinForms.ReaLTaiizor', code: 'client/AppClient/Pages/Libraries/ReaLTaiizorPage.cs', online: 'winforms-realtaiizor', url: 'https://github.com/Taiizor/ReaLTaiizor', rec: true, note: 'Huge set of themes: Poison, Hope, Material, Crown…' },
+    { name: 'Krypton Toolkit', fw: 'WinForms', lic: 'BSD-3 · free', pkg: 'Krypton.Toolkit', hello: 'WinForms.Krypton', code: 'client/AppClient/Pages/Libraries/KryptonPage.cs', online: 'winforms-krypton', url: 'https://github.com/Krypton-Suite/Standard-Toolkit', note: 'Office / Microsoft 365 style, ribbons and docking.' },
+    { name: 'MaterialDesignInXaml', fw: 'WPF', lic: 'MIT · free', pkg: 'MaterialDesignThemes', hello: 'Wpf.MaterialDesign', code: 'client/AppClient.WpfPages/MaterialDesignPage.xaml', online: 'wpf-materialdesign', url: 'https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit', rec: true, note: 'The most popular Material Design kit for WPF.' },
+    { name: 'WPF UI', fw: 'WPF', lic: 'MIT · free', pkg: 'WPF-UI', hello: 'Wpf.WpfUi', code: 'client/AppClient.WpfPages/WpfUiPage.xaml', online: 'wpf-wpfui', url: 'https://github.com/lepoco/wpfui', rec: true, note: 'Fluent / Windows 11 look with Mica backdrop.' },
+    { name: 'MahApps.Metro', fw: 'WPF', lic: 'MIT · free', pkg: 'MahApps.Metro', hello: 'Wpf.MahApps', code: 'client/AppClient.WpfPages/MahAppsPage.xaml', online: 'wpf-mahapps', url: 'https://github.com/MahApps/MahApps.Metro', note: 'Modern Metro windows, flyouts and dialogs.' },
+    { name: 'HandyControl', fw: 'WPF', lic: 'MIT · free', pkg: 'HandyControl', hello: 'Wpf.HandyControl', code: 'client/AppClient.WpfPages/HandyControlPage.xaml', online: 'wpf-handycontrol', url: 'https://github.com/HandyOrg/HandyControl', note: '80+ extra controls with several skins.' },
+    { name: 'Avalonia UI', fw: 'Other', fwLabel: 'Cross-platform', lic: 'MIT · free', pkg: 'Avalonia', online: 'crossplatform-avalonia', url: 'https://avaloniaui.net', note: 'WPF-like XAML on Windows, macOS and Linux.' },
+    { name: 'MudBlazor', fw: 'Other', fwLabel: 'Web (Blazor)', lic: 'MIT · free', pkg: 'MudBlazor', online: 'web-mudblazor', url: 'https://mudblazor.com', note: 'Material components for C# web apps.' }
+  ];
+  let mode = 'hello', filter = 'all';
+  const grid = document.getElementById('kitGrid');
+  const imgFor = (k) => mode === 'hello' && k.hello ? `screenshots/hello-world/${k.hello}.png` : `screenshots/online-templates/${k.online}.png`;
+
+  kits.forEach(k => {
+    const card = document.createElement('article');
+    card.className = 'kit reveal';
+    card.dataset.fw = k.fw;
+    card.innerHTML = `
+      <div class="shot">${k.rec ? '<span class="badge-rec">Beginner pick</span>' : ''}<img loading="lazy" alt=""></div>
+      <div class="body">
+        <div class="title"><h3></h3><span class="fw"></span></div>
+        <p class="meta"></p>
+        <div class="links"><a target="_blank" rel="noopener">Project page ↗</a>${k.code ? `<span class="mono path">${k.code}</span>` : ''}</div>
+        <div class="cmd"><code></code><button class="copy" type="button">Copy</button></div>
+      </div>`;
+    card.querySelector('h3').textContent = k.name;
+    card.querySelector('.fw').textContent = k.fwLabel || k.fw;
+    card.querySelector('.meta').textContent = `${k.lic} · ${k.note}`;
+    card.querySelector('.links a').href = k.url;
+    card.querySelector('code').textContent = `dotnet add package ${k.pkg}`;
+    const img = card.querySelector('img');
+    img.src = imgFor(k);
+    img.alt = `${k.name} screenshot`;
+    card.querySelector('.shot').addEventListener('click', () => openLightbox(img.src, `${k.name} · ${mode === 'hello' && k.hello ? 'page in our app' : 'template from the project site'}`));
+    k.card = card; k.img = img;
+    grid.appendChild(card);
+  });
+
+  function applyKits() {
+    kits.forEach(k => {
+      const matches = filter === 'all' || k.fw === filter;
+      const available = mode === 'online' || !!k.hello;
+      k.card.classList.toggle('hide', !(matches && available));
+      const next = imgFor(k);
+      if (!k.img.src.endsWith(next)) {
+        k.img.classList.add('swap');
+        setTimeout(() => { k.img.src = next; k.img.onload = () => k.img.classList.remove('swap'); }, 200);
+      }
+    });
+  }
+
+  const seg = document.getElementById('modeSeg'), thumb = seg.querySelector('.thumb');
+  function moveThumb(btn) { thumb.style.left = btn.offsetLeft + 'px'; thumb.style.width = btn.offsetWidth + 'px'; }
+  seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    seg.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+    moveThumb(b); mode = b.dataset.mode; applyKits();
+  }));
+  addEventListener('load', () => moveThumb(seg.querySelector('.active')));
+  addEventListener('resize', () => moveThumb(seg.querySelector('.active')));
+  moveThumb(seg.querySelector('.active'));
+
+  document.querySelectorAll('#filters button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#filters button').forEach(x => x.classList.toggle('active', x === b));
+    filter = b.dataset.f; applyKits();
+  }));
+  applyKits();
+
+  const lb = document.getElementById('lightbox');
+  function openLightbox(src, cap) {
+    document.getElementById('lbImg').src = src;
+    document.getElementById('lbCap').textContent = cap;
+    lb.showModal();
+  }
+  lb.addEventListener('click', () => lb.close());
+
+  /* ---------- copy buttons ---------- */
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.copy');
+    if (!btn) return;
+    const text = btn.dataset.copy || btn.parentElement.querySelector('code').textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied!'; btn.classList.add('ok'); }
+    catch { btn.textContent = 'Select & copy'; }
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1500);
+  });
+
+  /* ---------- team ---------- */
+  const team = [
+    ['Shaloh', 'Shaloh69', 'Project lead · repo owner'],
+    ['Alexa Jayme', 'algrze43', 'Role: to decide'],
+    ['Mitzi Engbino', 'engbinomitzi', 'Role: to decide'],
+    ['Elaiza Potot', 'elai0503', 'Role: to decide']
+  ];
+  const teamGrid = document.getElementById('teamGrid');
+  team.forEach(([name, gh, role], i) => {
+    const m = document.createElement('div');
+    m.className = 'member reveal';
+    m.style.transitionDelay = (i * 80) + 'ms';
+    m.innerHTML = `<div class="avatar"><img loading="lazy" alt=""></div><h4></h4><a class="gh" target="_blank" rel="noopener"></a><br><span class="role"></span>`;
+    m.querySelector('img').src = `https://github.com/${gh}.png?size=184`;
+    m.querySelector('img').alt = `${name} avatar`;
+    m.querySelector('h4').textContent = name;
+    m.querySelector('.gh').href = `https://github.com/${gh}`;
+    m.querySelector('.gh').textContent = '@' + gh;
+    m.querySelector('.role').textContent = role;
+    if (!reduceMotion) {
+      m.addEventListener('mousemove', (e) => {
+        const r = m.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+        m.style.transform = `perspective(700px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateY(-4px)`;
+      });
+      m.addEventListener('mouseleave', () => { m.style.transform = ''; });
+    }
+    teamGrid.appendChild(m);
+  });
+
+  /* ---------- commands ---------- */
+  const cmds = [
+    ['Run locally', 'run-dev', [
+      ['c', 'Check that every tool and config file is ready'], ['p', 'run-dev.bat check'], [],
+      ['c', 'First time: install packages, create tables, add sample data'], ['p', 'run-dev.bat setup'], [],
+      ['c', 'Start the server, then the C# app'], ['p', 'run-dev.bat'], [],
+      ['c', 'Only the server  /  only the app  /  the app on one page'], ['p', 'run-dev.bat server'], ['p', 'run-dev.bat client'], ['p', 'run-dev.bat client Products']]],
+    ['Git every day', 'git', [
+      ['c', 'Get the latest work from everyone'], ['p', 'git checkout main'], ['p', 'git pull'], [],
+      ['c', 'Make a branch for your task'], ['p', 'git checkout -b feature/product-list'], [],
+      ['c', 'Save and upload (check git status first: no .env!)'], ['p', 'git add .'], ['p', 'git commit -m "Add product list screen"'], ['p', 'git push -u origin feature/product-list'],
+      ['c', 'Then open a Pull Request on GitHub']]],
+    ['Database', 'server', [
+      ['c', 'New table? Add a numbered file in database/migrations, then:'], ['p', 'cd server'], ['p', 'npm run db:migrate'], [],
+      ['c', 'Add the sample data again (safe to repeat)'], ['p', 'npm run db:seed'], [],
+      ['c', 'Test the API in the browser'], ['p', 'start http://localhost:3000/api/products']]],
+    ['Add a page', 'client', [
+      ['c', 'Visual Studio: right-click Pages > Add > User Control (Windows Forms)'], [],
+      ['c', 'Then add ONE line to the menu list in Forms/MainForm.cs:'], ['p', 'new("Suppliers", () => new SuppliersPage()),'], [],
+      ['c', 'Open it from any button:'], ['p', 'Navigator.Go(new SuppliersPage(), "Suppliers");']]]
+  ];
+  const tabs = document.getElementById('cmdTabs'), panels = document.getElementById('cmdPanels');
+  cmds.forEach(([label, file, rows], i) => {
+    const b = document.createElement('button'); b.textContent = label; if (i === 0) b.className = 'active';
+    const p = document.createElement('div'); p.className = 'panel' + (i === 0 ? ' active' : '');
+    const plain = rows.filter(r => r[0] === 'p').map(r => r[1]).join('\n');
+    p.innerHTML = `<div class="term"><div class="bar-top"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span></span><button class="copy" type="button">Copy</button></div><pre></pre></div>`;
+    p.querySelector('.bar-top span').textContent = file;
+    p.querySelector('.copy').dataset.copy = plain;
+    const pre = p.querySelector('pre');
+    rows.forEach(r => {
+      const line = document.createElement('span');
+      if (r[0] === 'c') { line.className = 'c'; line.textContent = '# ' + r[1]; }
+      else if (r[0] === 'p') { const s = document.createElement('span'); s.className = 'p'; s.textContent = '> '; line.append(s, r[1]); }
+      pre.append(line, '\n');
+    });
+    b.addEventListener('click', () => {
+      tabs.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      panels.querySelectorAll('.panel').forEach(x => x.classList.toggle('active', x === p));
+    });
+    tabs.appendChild(b); panels.appendChild(p);
+  });
+
+  /* ---------- rules ---------- */
+  [['App ≠ database', 'The C# app only calls the API, never the database.'],
+   ['Secrets stay secret', '.env and ca.pem never go to GitHub.'],
+   ['$1, $2 placeholders', 'Parameterised SQL only, to stop SQL injection.'],
+   ['Hash passwords', 'bcrypt before saving, bcrypt.compare at login.'],
+   ['Small steps', 'Test often, commit often, pull every morning.']]
+    .forEach(([t, d], i) => {
+      const r = document.createElement('div');
+      r.className = 'rule reveal'; r.style.transitionDelay = (i * 70) + 'ms';
+      r.innerHTML = `<span class="n">${i + 1}</span><h4></h4><p></p>`;
+      r.querySelector('h4').textContent = t; r.querySelector('p').textContent = d;
+      document.getElementById('rulesGrid').appendChild(r);
+    });
+
+  /* ---------- scroll reveal ---------- */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>

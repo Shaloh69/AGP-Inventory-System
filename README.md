@@ -1,15 +1,18 @@
 # AGP Inventory System
 
-A beginner-friendly starter repository for an inventory management system built in three parts:
+A beginner-friendly starter template for an inventory management system built in three parts:
 
-| Layer    | Technology                          | Hosted on |
-|----------|-------------------------------------|-----------|
-| Frontend | C# desktop app (.NET, WinForms or WPF) | Runs on the user's Windows PC |
-| Backend  | Node.js + Express (REST API)        | [Render](https://render.com) |
-| Database | PostgreSQL                          | [Aiven](https://aiven.io) |
+| Layer    | Technology                                   | Hosted on |
+|----------|----------------------------------------------|-----------|
+| Frontend | C# desktop app (.NET 10, WinForms + WPF pages) | Runs on the user's Windows PC |
+| Backend  | Node.js + Express (REST API)                 | [Render](https://render.com) |
+| Database | PostgreSQL                                   | [Aiven](https://aiven.io) |
 
-> **Nothing is built yet.** This repository only contains the folder structure,
-> README files and the beginner guide. Follow the guide to build each part step by step.
+The template already works end to end with one feature, **products**:
+the app reads, adds, edits and deletes products in PostgreSQL through the API.
+Every new feature you build copies that same pattern.
+
+![The app](docs/screenshots/app/products.png)
 
 ---
 
@@ -24,21 +27,42 @@ A beginner-friendly starter repository for an inventory management system built 
 
 > Fill in each member's role (Database / Backend / Frontend / QA) – see Section 5 of the guide.
 
-## Getting the code
+## Start here
+
+> **New to the team? Open the start page first:** <https://shaloh69.github.io/AGP-Inventory-System/>
+> (source: [docs/index.html](docs/index.html)), then read the
+> **[Beginner's Guide (PDF)](docs/Beginners-Guide.pdf)**.
 
 ```bash
 git clone https://github.com/Shaloh69/AGP-Inventory-System.git
 cd AGP-Inventory-System
 ```
 
-## Start here
+## Run it locally
 
-1. Read the full guide: **[docs/Beginners-Guide.pdf](docs/Beginners-Guide.pdf)**
-2. Pick a UI library: **[docs/UI-LIBRARIES.md](docs/UI-LIBRARIES.md)**
-3. Follow the README inside each folder in this order:
-   1. [database/README.md](database/README.md) – create the PostgreSQL database on Aiven
-   2. [server/README.md](server/README.md) – build the Express API and deploy it to Render
-   3. [client/README.md](client/README.md) – build the C# app that talks to the API
+```bash
+run-dev.bat check            # are git, node, npm, dotnet installed? are .env and ca.pem in place?
+run-dev.bat setup            # first time: npm install + create tables + sample data
+run-dev.bat                  # start the Express server, then the C# app
+run-dev.bat server           # only the server   (http://localhost:3000)
+run-dev.bat client           # only the C# app   (talks to http://localhost:3000/)
+run-dev.bat client MahApps   # open the app on a specific page
+```
+
+Before `setup`: copy `server/.env.example` to `server/.env`, paste your Aiven `DATABASE_URL`,
+and save the Aiven CA certificate as `server/certs/ca.pem` (see [database/README.md](database/README.md)).
+
+## Where to start coding
+
+| I want to… | Open |
+|------------|------|
+| change how a page looks / add a button | `client/AppClient/Pages/*.cs` (double-click for the designer) |
+| add a page to the menu | the `menu` list in `client/AppClient/Forms/MainForm.cs` |
+| write a function | `client/AppClient/Helpers/InventoryMath.cs` |
+| call the server from C# | `client/AppClient/Services/ApiClient.cs` |
+| add an API endpoint | `server/src/routes` → `controllers` → `models` |
+| add a table | a new numbered file in `database/migrations/`, then `npm run db:migrate` |
+| try a UI library | the UI LIBRARIES pages in the app (`client/AppClient/Pages/Libraries`, `client/AppClient.WpfPages`) |
 
 ---
 
@@ -61,66 +85,53 @@ The database password lives only on the server (in environment variables).
 ```
 AGP-Inventory-System/
 ├── README.md                 ← you are here
-├── .gitignore                ← files Git must never upload (.env, bin/, node_modules/ …)
+├── run-dev.bat / run-dev.ps1 ← run everything locally
 │
-├── client/                   ← C# frontend (Visual Studio solution goes here)
-│   ├── README.md
-│   └── AppClient/
-│       ├── Forms/            ← screens / windows (LoginForm, MainForm …)
-│       ├── Models/           ← C# classes that match the API's JSON
-│       ├── Services/         ← ApiClient: all HTTP calls to the server
-│       ├── Helpers/          ← small reusable utilities (validation, formatting)
-│       └── Assets/           ← images and icons
+├── client/                   ← C# app  (open AppClient.slnx in Visual Studio)
+│   ├── AppClient/
+│   │   ├── Program.cs
+│   │   ├── Forms/MainForm.cs ← main window: sidebar menu + page area
+│   │   ├── Pages/            ← Home, First function, Products, Add/Edit product
+│   │   │   └── Libraries/    ← MaterialSkin.2, ReaLTaiizor, Krypton demo pages
+│   │   ├── Models/           ← Product.cs (matches the API's JSON)
+│   │   ├── Services/         ← ApiClient.cs: all HTTP calls to the server
+│   │   └── Helpers/          ← AppConfig, InventoryMath, Navigator, Theme
+│   ├── AppClient.WpfPages/   ← MaterialDesign, WPF UI, MahApps, HandyControl demo pages
+│   └── capture-pages.ps1     ← re-takes the screenshots in docs/
 │
-├── server/                   ← Node.js + Express backend (deployed to Render)
-│   ├── README.md
+├── server/                   ← Node.js + Express API (deployed to Render)
 │   ├── .env.example          ← copy to .env and fill in your own values
 │   ├── certs/                ← Aiven ca.pem goes here (never committed)
 │   └── src/
-│       ├── config/           ← database connection (db.js)
-│       ├── routes/           ← URL → controller mapping
-│       ├── controllers/      ← request handling logic
-│       ├── models/           ← SQL queries for each table
-│       ├── middleware/       ← auth checks, error handler, logging
-│       └── utils/            ← helpers (password hashing, validators)
+│       ├── index.js · app.js
+│       ├── config/db.js      ← PostgreSQL connection
+│       ├── routes/ controllers/ models/   ← products feature
+│       ├── middleware/       ← error handler, 404
+│       ├── utils/            ← validateProduct
+│       └── scripts/          ← migrate.js, seed.js
 │
-├── database/                 ← SQL scripts for PostgreSQL (Aiven)
-│   ├── README.md
-│   ├── migrations/           ← CREATE / ALTER TABLE scripts, numbered in order
-│   ├── seeds/                ← sample data for testing
-│   └── diagrams/             ← ERD images / exports
+├── database/
+│   ├── migrations/           ← 001_create_products_table.sql …
+│   ├── seeds/                ← sample products
+│   └── diagrams/             ← ERD images
 │
-└── docs/                     ← documentation
-    ├── README.md
+└── docs/
+    ├── index.html            ← "Hey, you start here" page (GitHub Pages)
     ├── Beginners-Guide.pdf   ← the full step-by-step guide
-    └── UI-LIBRARIES.md       ← UI libraries usable in C#
+    ├── UI-LIBRARIES.md       ← UI libraries usable in C#
+    └── screenshots/          ← app/, hello-world/ (library pages), online-templates/
 ```
-
----
-
-## Build plan (summary)
-
-| Phase | Goal | Done when… |
-|-------|------|-----------|
-| 0 | Install tools, create GitHub / Render / Aiven accounts | `git`, `node`, `dotnet` all print a version |
-| 1 | Design and create the database on Aiven | Tables exist and you can query them from DBeaver/pgAdmin |
-| 2 | Build the Express API locally | `GET http://localhost:3000/api/health` returns `{ "status": "ok" }` |
-| 3 | Deploy the API to Render | The same URL works on `https://agp-api.onrender.com` |
-| 4 | Build the C# screens with a UI library | Forms open and look right (with fake data) |
-| 5 | Connect C# to the live API | Data you add in the app appears in the Aiven database |
-| 6 | Test, polish and document | Checklist in the guide is complete |
-
-Full details for every phase are in the [Beginners Guide](docs/Beginners-Guide.pdf).
 
 ---
 
 ## Team workflow (Git)
 
 ```bash
-git checkout -b feature/login-screen   # 1. make a branch for your task
-git add .                              # 2. stage your changes
-git commit -m "Add login screen UI"    # 3. commit with a clear message
-git push -u origin feature/login-screen  # 4. push, then open a Pull Request on GitHub
+git checkout main && git pull           # 1. get everyone's latest work
+git checkout -b feature/suppliers       # 2. make a branch for your task
+git add .                               # 3. stage your changes (check git status: no .env!)
+git commit -m "Add suppliers page"      # 4. commit with a clear message
+git push -u origin feature/suppliers    # 5. push, then open a Pull Request on GitHub
 ```
 
 Never commit `.env`, `ca.pem`, passwords, `bin/`, `obj/` or `node_modules/`.

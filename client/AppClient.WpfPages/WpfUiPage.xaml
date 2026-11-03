@@ -1,0 +1,49 @@
+<UserControl x:Class="AppClient.WpfPages.WpfUiPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             Background="{DynamicResource ApplicationBackgroundBrush}">
+    <!-- [0] = colours (Light / Dark), [1] = control styles. Loaded for THIS page only. -->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Light" />
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Accent (brand) colour. WPF UI normally sets these app-wide; here they are set for this page. -->
+            <SolidColorBrush x:Key="AccentButtonBackground" Color="#5B4BFF" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#6E60FF" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#4A3AE6" />
+            <SolidColorBrush x:Key="AccentButtonBorderBrushPressed" Color="#4A3AE6" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#5B4BFF" />
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="#5B4BFF" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="28,22">
+        <ui:Card Padding="28" Width="600" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="HandWave24" Filled="True" FontSize="40" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    <TextBlock Text="Hello, World!" FontSize="38" FontWeight="SemiBold" Margin="14,0,0,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                </StackPanel>
+                <TextBlock Text="WPF UI  ·  WPF  ·  Fluent / Windows 11 design" FontSize="14" Margin="0,6,0,20"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <ui:TextBox x:Name="txtName" Width="320" PlaceholderText="Your name" />
+                    <ui:Button Content="Say hello" Margin="12,0,0,0" Appearance="Primary"
+                               Icon="{ui:SymbolIcon Send24}" Click="SayHello_Click" />
+                </StackPanel>
+
+                <TextBlock x:Name="lblGreeting" Text="Type your name and press the button." FontSize="15" Margin="0,20,0,16"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+                <ui:ToggleSwitch x:Name="tglDark" Content="Dark mode" Click="Dark_Click" />
+            </StackPanel>
+        </ui:Card>
+    </Grid>
+</UserControl>

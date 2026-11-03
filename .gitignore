@@ -33,3 +33,6 @@ desktop.ini
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# ---------- Tools ----------
+.playwright-mcp/
