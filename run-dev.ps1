@@ -9,11 +9,12 @@
       .\run-dev.bat client           only start the C# app (pointed at localhost)
       .\run-dev.bat client Products  start the C# app on a specific page (Home, Products, MahApps ...)
       .\run-dev.bat clean            delete the C# build folders (bin/obj) - fixes most strange build errors
+      .\run-dev.bat install          install missing tools (Git, Node.js LTS, .NET 10 SDK) with winget
 
   In VS Code / PowerShell type .\run-dev.bat (with .\ in front). In Command Prompt run-dev.bat also works.
 #>
 param(
-    [ValidateSet("all", "setup", "check", "server", "client", "clean")]
+    [ValidateSet("all", "setup", "check", "server", "client", "clean", "install")]
     [string]$Target = "all",
     [string]$Page = ""
 )
@@ -34,8 +35,43 @@ function Test-Tool($name, $command) {
         $output = @(& $command 2>$null)
         if ($LASTEXITCODE -eq 0 -and $output) { Write-Ok "$name $($output[0])"; return $true }
     } catch { }
-    Write-Bad "$name is not installed (see Section 3 of docs/Beginners-Guide.pdf)"
+    Write-Bad "$name is not installed - run: .\run-dev.bat install   (or see Section 3 of docs/Beginners-Guide.pdf)"
     return $false
+}
+
+# The tools this project needs, with their winget package ids and download pages.
+$Tools = @(
+    @{ Name = "Git";          Command = "git";    Id = "Git.Git";                 Url = "https://git-scm.com/download/win" },
+    @{ Name = "Node.js LTS";  Command = "node";   Id = "OpenJS.NodeJS.LTS";       Url = "https://nodejs.org" },
+    @{ Name = ".NET 10 SDK";  Command = "dotnet"; Id = "Microsoft.DotNet.SDK.10"; Url = "https://dotnet.microsoft.com/download/dotnet/10.0" }
+)
+
+function Test-DotnetSdk10 {
+    if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { return $false }
+    $sdks = @(dotnet --list-sdks 2>$null | ForEach-Object { ($_ -split ' ')[0] })
+    return [bool]($sdks | Where-Object { [int]($_ -split '\.')[0] -ge 10 })
+}
+
+function Install-Tools {
+    Write-Step "Installing missing tools"
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Bad "winget is not available on this PC. Install the tools from these pages instead:"
+        $Tools | ForEach-Object { Write-Host "    $($_.Name): $($_.Url)" }
+        return
+    }
+    $installed = 0
+    foreach ($tool in $Tools) {
+        $present = if ($tool.Command -eq "dotnet") { Test-DotnetSdk10 } else { [bool](Get-Command $tool.Command -ErrorAction SilentlyContinue) }
+        if ($present) { Write-Ok "$($tool.Name) already installed"; continue }
+        Write-Host "  Installing $($tool.Name) (a Windows permission prompt may appear)..."
+        winget install --id $tool.Id -e --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -eq 0) { Write-Ok "$($tool.Name) installed"; $installed++ }
+        else { Write-Bad "$($tool.Name) failed - install it from $($tool.Url)" }
+    }
+    if ($installed -gt 0) {
+        Write-Host "`n  IMPORTANT: close this terminal (and VS Code) and open a new one, so Windows finds the new tools." -ForegroundColor Yellow
+        Write-Host "  Then run: .\run-dev.bat check" -ForegroundColor Yellow
+    }
 }
 
 function Invoke-Check {
@@ -48,17 +84,23 @@ function Invoke-Check {
 
     Write-Step "Checking versions"
     # The C# app targets .NET 10, so an older SDK cannot build it.
-    $sdks = @(dotnet --list-sdks 2>$null | ForEach-Object { ($_ -split ' ')[0] })
+    $sdks = @()
+    if (Get-Command dotnet -ErrorAction SilentlyContinue) { $sdks = @(dotnet --list-sdks 2>$null | ForEach-Object { ($_ -split ' ')[0] }) }
     $sdk10 = $sdks | Where-Object { [int]($_ -split '\.')[0] -ge 10 } | Select-Object -Last 1
     if ($sdk10) { Write-Ok ".NET SDK $sdk10" }
     else {
-        Write-Bad ".NET 10 SDK not found (found: $($sdks -join ', ')). Install it: https://dotnet.microsoft.com/download/dotnet/10.0"
+        $found = if ($sdks) { "found: $($sdks -join ', ')" } else { "no .NET SDK installed" }
+        Write-Bad ".NET 10 SDK needed ($found) - run: .\run-dev.bat install"
         $ok = $false
     }
     $nodeMajor = 0
-    [void][int]::TryParse(((node -v 2>$null) -replace '^v(\d+).*', '$1'), [ref]$nodeMajor)
+    if (Get-Command node -ErrorAction SilentlyContinue) {
+        [void][int]::TryParse(((node -v 2>$null) -replace '^v(\d+).*', '$1'), [ref]$nodeMajor)
+    }
     if ($nodeMajor -ge 20) { Write-Ok "Node.js $nodeMajor (20 or newer needed)" }
     elseif ($nodeMajor -gt 0) { Write-Bad "Node.js $nodeMajor is too old - install the LTS version from https://nodejs.org"; $ok = $false }
+
+    if (-not $ok) { Write-Host "`n  Fix: .\run-dev.bat install   then close and reopen the terminal." -ForegroundColor Yellow }
 
     Write-Step "Checking project files"
     $envFile = Join-Path $ServerDir ".env"
@@ -163,6 +205,7 @@ switch ($Target) {
     "server" { Start-Server | Out-Null }
     "client" { Start-Client }
     "clean"  { Clear-ClientBuild }
+    "install" { Install-Tools }
     "all" {
         if (-not (Invoke-Check)) { Write-Host "`nInstall the missing tools first." -ForegroundColor Red; exit 1 }
         Start-Server | Out-Null

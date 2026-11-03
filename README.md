@@ -52,6 +52,7 @@ cd AGP-Inventory-System
 > Double-clicking `run-dev.bat` runs the default (server + app).
 
 ```bash
+.\run-dev.bat install          # new PC: installs missing Git, Node.js LTS and .NET 10 SDK (then reopen the terminal)
 .\run-dev.bat check            # are git, node, npm, dotnet installed? are .env and ca.pem in place?
 .\run-dev.bat setup            # first time: npm install + create tables + sample data
 .\run-dev.bat                  # start the Express server, then the C# app
@@ -63,6 +64,7 @@ cd AGP-Inventory-System
 
 | Problem | Fix |
 |---------|-----|
+| `dotnet is not installed` / `node is not installed` | `.\run-dev.bat install`, then **close and reopen** the terminal (and VS Code) and run `.\run-dev.bat check`. Or install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) / [Node.js LTS](https://nodejs.org) by hand. |
 | `'run-dev.bat' is not recognized` | Type `.\run-dev.bat`, and make sure the terminal is in the repository folder (`cd` into it). |
 | `Object reference not set to an instance of an object` while building | `.\run-dev.bat clean`, then `.\run-dev.bat check` – the C# app needs the **.NET 10 SDK**. `run-dev` already cleans and retries once automatically. |
 | The app shows an *unexpected error* window | The message says where it happened; the full details are in `%LOCALAPPDATA%\AGP Inventory\error.log` – send that file when asking for help. |
