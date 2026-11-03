@@ -36,3 +36,6 @@ desktop.ini
 
 # ---------- Tools ----------
 .playwright-mcp/
+
+# run-dev diagnostics
+restore-log.txt

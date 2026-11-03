@@ -60,13 +60,15 @@ cd AGP-Inventory-System
 .\run-dev.bat client           # only the C# app   (talks to http://localhost:3000/)
 .\run-dev.bat client MahApps   # open the app on a specific page
 .\run-dev.bat clean            # delete C# build folders (bin/obj) – fixes most strange build errors
+.\run-dev.bat repair           # fix C# package (NuGet) download errors
 ```
 
 | Problem | Fix |
 |---------|-----|
 | `dotnet is not installed` / `node is not installed` | `.\run-dev.bat install`, then **close and reopen** the terminal (and VS Code) and run `.\run-dev.bat check`. Or install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) / [Node.js LTS](https://nodejs.org) by hand. |
 | `'run-dev.bat' is not recognized` | Type `.\run-dev.bat`, and make sure the terminal is in the repository folder (`cd` into it). |
-| `Object reference not set to an instance of an object` while building | `.\run-dev.bat clean`, then `.\run-dev.bat check` – the C# app needs the **.NET 10 SDK**. `run-dev` already cleans and retries once automatically. |
+| `NuGet.targets ... error : Object reference not set to an instance of an object` | The PC's NuGet settings file is damaged. Run `.\run-dev.bat repair` and answer **Y** (it backs up `%APPDATA%\NuGet\NuGet.Config` and clears NuGet's caches), then `.\run-dev.bat`. A failed build also offers this automatically. Still failing? Send `restore-log.txt`. |
+| `Object reference not set to an instance of an object` (other) | `.\run-dev.bat clean`, then `.\run-dev.bat check` – the C# app needs the **.NET 10 SDK**. |
 | The app shows an *unexpected error* window | The message says where it happened; the full details are in `%LOCALAPPDATA%\AGP Inventory\error.log` – send that file when asking for help. |
 
 Before `setup`: copy `server/.env.example` to `server/.env`, paste your Aiven `DATABASE_URL`,

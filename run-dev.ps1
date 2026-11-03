@@ -9,12 +9,13 @@
       .\run-dev.bat client           only start the C# app (pointed at localhost)
       .\run-dev.bat client Products  start the C# app on a specific page (Home, Products, MahApps ...)
       .\run-dev.bat clean            delete the C# build folders (bin/obj) - fixes most strange build errors
+      .\run-dev.bat repair           fix C# package (NuGet) errors: reset NuGet settings + caches, clean build
       .\run-dev.bat install          install missing tools (Git, Node.js LTS, .NET 10 SDK) with winget
 
   In VS Code / PowerShell type .\run-dev.bat (with .\ in front). In Command Prompt run-dev.bat also works.
 #>
 param(
-    [ValidateSet("all", "setup", "check", "server", "client", "clean", "install")]
+    [ValidateSet("all", "setup", "check", "server", "client", "clean", "install", "repair")]
     [string]$Target = "all",
     [string]$Page = ""
 )
@@ -180,8 +181,27 @@ function Clear-ClientBuild {
         ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue; Write-Ok "deleted $($_.FullName.Replace($Root, '.'))" }
 }
 
-# Builds the app. If the build fails (for example "Object reference not set to an instance of an object"
-# from old bin/obj folders copied from another PC), clean once and try again, then show the real errors.
+# NuGet (which downloads the C# packages) reads %APPDATA%\NuGet\NuGet.Config on every PC.
+# If that file is damaged, every restore fails with "NuGet.targets ... error : ...", often
+# "Object reference not set to an instance of an object". Offer to back it up so NuGet makes a fresh one.
+function Repair-NuGet {
+    Write-Step "Repairing NuGet (the C# package downloader)"
+    dotnet nuget locals http-cache --clear *> $null
+    dotnet nuget locals temp --clear *> $null
+    Write-Ok "cleared NuGet download caches"
+
+    $userConfig = Join-Path $env:APPDATA "NuGet\NuGet.Config"
+    if (-not (Test-Path $userConfig)) { return }
+    Write-Host "  Your NuGet settings file may be damaged: $userConfig"
+    $answer = Read-Host "  Back it up and let NuGet create a fresh one? [Y/n]"
+    if ($answer -match '^(n|no)$') { return }
+    $backup = "$userConfig.backup-$(Get-Date -Format yyyyMMdd-HHmmss)"
+    Move-Item $userConfig $backup -Force
+    Write-Ok "backed up to $backup (rename it back to undo)"
+}
+
+# Builds the app. If the build fails, clean (and repair NuGet when the failure came from it),
+# try once more, then show the real errors and save a detailed log.
 function Invoke-ClientBuild {
     Write-Step "Building the C# app"
     $solution = Join-Path $ClientDir "AppClient.slnx"
@@ -189,13 +209,22 @@ function Invoke-ClientBuild {
         $output = @(dotnet build $solution -nologo -v q 2>&1 | ForEach-Object { "$_" })
         if ($LASTEXITCODE -eq 0) { Write-Ok "Build succeeded"; return $true }
         if ($attempt -eq 1) {
-            Write-Warn "Build failed - cleaning old build files and trying once more"
+            Write-Warn "Build failed - fixing the usual causes and trying once more"
+            if ($output -match 'NuGet') { Repair-NuGet }
             Clear-ClientBuild
+            dotnet restore $solution --force --disable-parallel *> $null
         }
     }
     Write-Bad "Build failed. The errors were:"
     $output | Where-Object { $_ -match 'error' } | Select-Object -Unique -First 15 | ForEach-Object { Write-Host "    $_" -ForegroundColor Red }
-    Write-Host "  Tips: run .\run-dev.bat check, close Visual Studio, then try again. See Section 23 of the guide." -ForegroundColor Yellow
+
+    # Save every detail so someone can see exactly what went wrong.
+    $log = Join-Path $Root "restore-log.txt"
+    dotnet --info *> $log
+    dotnet nuget list source *>> $log
+    dotnet restore $solution -v detailed *>> $log
+    Write-Host "  Detailed log saved to: $log  (send this file when asking for help)" -ForegroundColor Yellow
+    Write-Host "  Tips: close Visual Studio, run .\run-dev.bat check, then try again. See Section 23 of the guide." -ForegroundColor Yellow
     return $false
 }
 
@@ -217,6 +246,7 @@ switch ($Target) {
     "client" { Start-Client }
     "clean"  { Clear-ClientBuild }
     "install" { Install-Tools }
+    "repair"  { Repair-NuGet; Clear-ClientBuild }
     "all" {
         if (-not (Invoke-Check)) { Write-Host "`nInstall the missing tools first." -ForegroundColor Red; exit 1 }
         Start-Server | Out-Null
