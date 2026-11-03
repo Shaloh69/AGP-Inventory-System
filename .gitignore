@@ -1,0 +1,35 @@
+# ---------- Secrets (NEVER commit) ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+server/certs/*
+!server/certs/.gitkeep
+appsettings.Development.json
+
+# ---------- Node.js ----------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+coverage/
+
+# ---------- C# / .NET / Visual Studio ----------
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.cache
+packages/
+TestResults/
+publish/
+
+# ---------- OS / editors ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
