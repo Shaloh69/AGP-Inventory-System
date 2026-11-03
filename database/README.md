@@ -16,7 +16,7 @@ npm run db:migrate   # runs every migration that has not run yet (remembered in 
 npm run db:seed      # runs every seed file
 ```
 
-`run-dev.bat setup` from the repository root does both.
+`.\run-dev.bat setup` from the repository root does both.
 
 **Rule:** never edit a migration that has already run. Add a new numbered file instead,
 e.g. `002_create_suppliers_table.sql` or `003_add_category_to_products.sql`.

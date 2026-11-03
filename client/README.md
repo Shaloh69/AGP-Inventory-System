@@ -10,9 +10,9 @@ page per UI library so you can compare them and copy what you like.
 
 ```bash
 # from the repository root
-run-dev.bat                    # starts the server, then this app
-run-dev.bat client             # only the app (pointed at http://localhost:3000/)
-run-dev.bat client Products    # open straight on a page
+.\run-dev.bat                    # starts the server, then this app
+.\run-dev.bat client             # only the app (pointed at http://localhost:3000/)
+.\run-dev.bat client Products    # open straight on a page
 ```
 
 Or open `client/AppClient.slnx` in Visual Studio and press **F5**

@@ -8,9 +8,12 @@
       .\run-dev.bat server           only start the Express server (http://localhost:3000)
       .\run-dev.bat client           only start the C# app (pointed at localhost)
       .\run-dev.bat client Products  start the C# app on a specific page (Home, Products, MahApps ...)
+      .\run-dev.bat clean            delete the C# build folders (bin/obj) - fixes most strange build errors
+
+  In VS Code / PowerShell type .\run-dev.bat (with .\ in front). In Command Prompt run-dev.bat also works.
 #>
 param(
-    [ValidateSet("all", "setup", "check", "server", "client")]
+    [ValidateSet("all", "setup", "check", "server", "client", "clean")]
     [string]$Target = "all",
     [string]$Page = ""
 )
@@ -42,6 +45,20 @@ function Invoke-Check {
     $ok = (Test-Tool "node"   { node -v })            -and $ok
     $ok = (Test-Tool "npm"    { npm -v })             -and $ok
     $ok = (Test-Tool "dotnet" { dotnet --version })   -and $ok
+
+    Write-Step "Checking versions"
+    # The C# app targets .NET 10, so an older SDK cannot build it.
+    $sdks = @(dotnet --list-sdks 2>$null | ForEach-Object { ($_ -split ' ')[0] })
+    $sdk10 = $sdks | Where-Object { [int]($_ -split '\.')[0] -ge 10 } | Select-Object -Last 1
+    if ($sdk10) { Write-Ok ".NET SDK $sdk10" }
+    else {
+        Write-Bad ".NET 10 SDK not found (found: $($sdks -join ', ')). Install it: https://dotnet.microsoft.com/download/dotnet/10.0"
+        $ok = $false
+    }
+    $nodeMajor = 0
+    [void][int]::TryParse(((node -v 2>$null) -replace '^v(\d+).*', '$1'), [ref]$nodeMajor)
+    if ($nodeMajor -ge 20) { Write-Ok "Node.js $nodeMajor (20 or newer needed)" }
+    elseif ($nodeMajor -gt 0) { Write-Bad "Node.js $nodeMajor is too old - install the LTS version from https://nodejs.org"; $ok = $false }
 
     Write-Step "Checking project files"
     $envFile = Join-Path $ServerDir ".env"
@@ -103,14 +120,41 @@ function Start-Server {
     return $false
 }
 
+function Clear-ClientBuild {
+    Write-Step "Deleting C# build folders (bin / obj)"
+    dotnet build-server shutdown *> $null
+    Get-ChildItem $ClientDir -Directory -Recurse -Include bin, obj -ErrorAction SilentlyContinue |
+        ForEach-Object { Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue; Write-Ok "deleted $($_.FullName.Replace($Root, '.'))" }
+}
+
+# Builds the app. If the build fails (for example "Object reference not set to an instance of an object"
+# from old bin/obj folders copied from another PC), clean once and try again, then show the real errors.
+function Invoke-ClientBuild {
+    Write-Step "Building the C# app"
+    $solution = Join-Path $ClientDir "AppClient.slnx"
+    for ($attempt = 1; $attempt -le 2; $attempt++) {
+        $output = @(dotnet build $solution -nologo -v q 2>&1 | ForEach-Object { "$_" })
+        if ($LASTEXITCODE -eq 0) { Write-Ok "Build succeeded"; return $true }
+        if ($attempt -eq 1) {
+            Write-Warn "Build failed - cleaning old build files and trying once more"
+            Clear-ClientBuild
+        }
+    }
+    Write-Bad "Build failed. The errors were:"
+    $output | Where-Object { $_ -match 'error' } | Select-Object -Unique -First 15 | ForEach-Object { Write-Host "    $_" -ForegroundColor Red }
+    Write-Host "  Tips: run .\run-dev.bat check, close Visual Studio, then try again. See Section 23 of the guide." -ForegroundColor Yellow
+    return $false
+}
+
 function Start-Client {
+    if (-not (Invoke-ClientBuild)) { return }
     Write-Step "Starting the C# app"
     # AppConfig.cs reads API_BASE_URL first, so the app talks to the local server.
     $env:API_BASE_URL = "http://localhost:$Port/"
     Write-Ok "API_BASE_URL = $env:API_BASE_URL"
     $appArgs = @()
     if ($Page) { $appArgs = @("--", "--page", $Page); Write-Ok "Opening page: $Page" }
-    dotnet run --project (Join-Path $ClientDir "AppClient\AppClient.csproj") @appArgs
+    dotnet run --no-build --project (Join-Path $ClientDir "AppClient\AppClient.csproj") @appArgs
 }
 
 switch ($Target) {
@@ -118,6 +162,7 @@ switch ($Target) {
     "check"  { Invoke-Check | Out-Null }
     "server" { Start-Server | Out-Null }
     "client" { Start-Client }
+    "clean"  { Clear-ClientBuild }
     "all" {
         if (-not (Invoke-Check)) { Write-Host "`nInstall the missing tools first." -ForegroundColor Red; exit 1 }
         Start-Server | Out-Null

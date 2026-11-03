@@ -1,4 +1,5 @@
 using AppClient.Forms;
+using AppClient.Helpers;
 
 namespace AppClient;
 
@@ -11,6 +12,10 @@ static class Program
     [STAThread]
     static void Main(string[] args)
     {
+        // Any crash shows a window with the full details (and saves them to a log file)
+        // instead of a short "Object reference not set to an instance of an object".
+        ErrorReporter.Install();
+
         ApplicationConfiguration.Initialize();
 
         // The WPF library pages (MaterialDesign, WPF UI, MahApps, HandyControl) expect a WPF

@@ -7,8 +7,8 @@ tested feature – **products** – that you copy for every new feature.
 
 ```bash
 # from the repository root
-run-dev.bat setup      # first time: npm install + create tables + sample data
-run-dev.bat server     # start on http://localhost:3000 (restarts when you save a file)
+.\run-dev.bat setup      # first time: npm install + create tables + sample data
+.\run-dev.bat server     # start on http://localhost:3000 (restarts when you save a file)
 ```
 
 Or by hand inside `server/`:

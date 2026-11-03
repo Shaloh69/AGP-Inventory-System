@@ -447,7 +447,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space
   <div class="wrap">
     <p class="kicker reveal">UI libraries for C#</p>
     <h2 class="reveal">Pick your look.</h2>
-    <p class="lead reveal">Every library has its own <b>page inside our app</b> (open it from the UI LIBRARIES menu, or <span class="mono">run-dev.bat client MahApps</span>). Edit its code using the <i>TRY THIS</i> list at the top of the file. Switch between our pages and each library's <b>own templates</b> from online. Click any screenshot to enlarge it.</p>
+    <p class="lead reveal">Every library has its own <b>page inside our app</b> (open it from the UI LIBRARIES menu, or <span class="mono">.\run-dev.bat client MahApps</span>). Edit its code using the <i>TRY THIS</i> list at the top of the file. Switch between our pages and each library's <b>own templates</b> from online. Click any screenshot to enlarge it.</p>
     <div class="toolbar reveal">
       <div class="seg" id="modeSeg">
         <span class="thumb"></span>
@@ -555,10 +555,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space
     ['Install the tools', 'Git, Node.js (LTS), Visual Studio with ".NET desktop development", DBeaver, Postman or Bruno.'],
     ['Accept the GitHub invite', 'Check your email, accept the invitation to Shaloh69/AGP-Inventory-System.'],
     ['Clone the repository', 'git clone https://github.com/Shaloh69/AGP-Inventory-System.git'],
-    ['Run the health check', 'In a terminal at the repo root, run: run-dev.bat check. Every tool should show [ok].'],
-    ['Set up the server and database', 'Copy server/.env.example to server/.env, add the Aiven values and ca.pem, then run: run-dev.bat setup.'],
+    ['Run the health check', 'In a terminal at the repo root, run: .\\run-dev.bat check. Every tool should show [ok].'],
+    ['Set up the server and database', 'Copy server/.env.example to server/.env, add the Aiven values and ca.pem, then run: .\\run-dev.bat setup.'],
     ['Read sections 1 to 5 of the guide', 'The big picture, the repository layout and the 8-week plan.'],
-    ['Run the app', 'Run run-dev.bat. Open Products, add a product, then do one TRY THIS exercise on a UI library page.'],
+    ['Run the app', 'Run .\\run-dev.bat. Open Products, add a product, then do one TRY THIS exercise on a UI library page.'],
     ['Pick your role with the team', 'Database, Backend, Frontend or QA / docs. Write it in the README.']
   ];
   const doneSet = new Set(JSON.parse(store.get('agp-steps') || '[]'));
@@ -607,9 +607,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space
 
   /* ---------- roadmap ---------- */
   const phases = [
-    ['Phase 0 · Setup', 'Week 1', 'Install tools, clone the repo, run-dev.bat check, read guide Sections 1–10.', 'everyone has the app running locally'],
+    ['Phase 0 · Setup', 'Week 1', 'Install tools, clone the repo, .\\run-dev.bat check, read guide Sections 1–10.', 'everyone has the app running locally'],
     ['Phase 1 · Plan', 'Week 1', 'Feature list, screen sketches, ERD (products, categories, suppliers, stock movements, users), endpoint list.', 'one-page plan everyone agrees on'],
-    ['Phase 2 · Database', 'Week 2', 'Aiven PostgreSQL service, server/.env + ca.pem, run-dev.bat setup (migrations + sample data).', 'the Products page shows Aiven data'],
+    ['Phase 2 · Database', 'Week 2', 'Aiven PostgreSQL service, server/.env + ca.pem, .\\run-dev.bat setup (migrations + sample data).', 'the Products page shows Aiven data'],
     ['Phase 3 · Deploy', 'Week 2', 'Render Web Service (root: server), environment variables and the ca.pem secret file.', '/api/health/db works on onrender.com'],
     ['Phase 4 · UI choice', 'Week 2', 'Compare the UI library pages, pick one, restyle the starter pages with it.', 'the team agrees on one library'],
     ['Phase 5 · Features', 'Weeks 3–6', 'Suppliers, categories, stock in/out, reports – copy the products pattern (guide Section 17), one branch each.', 'each feature works end to end'],
@@ -756,10 +756,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space
   /* ---------- commands ---------- */
   const cmds = [
     ['Run locally', 'run-dev', [
-      ['c', 'Check that every tool and config file is ready'], ['p', 'run-dev.bat check'], [],
-      ['c', 'First time: install packages, create tables, add sample data'], ['p', 'run-dev.bat setup'], [],
-      ['c', 'Start the server, then the C# app'], ['p', 'run-dev.bat'], [],
-      ['c', 'Only the server  /  only the app  /  the app on one page'], ['p', 'run-dev.bat server'], ['p', 'run-dev.bat client'], ['p', 'run-dev.bat client Products']]],
+      ['c', 'Check that every tool and config file is ready'], ['p', '.\\run-dev.bat check'], [],
+      ['c', 'First time: install packages, create tables, add sample data'], ['p', '.\\run-dev.bat setup'], [],
+      ['c', 'Start the server, then the C# app'], ['p', '.\\run-dev.bat'], [],
+      ['c', 'Only the server  /  only the app  /  the app on one page'], ['p', '.\\run-dev.bat server'], ['p', '.\\run-dev.bat client'], ['p', '.\\run-dev.bat client Products']]],
     ['Git every day', 'git', [
       ['c', 'Get the latest work from everyone'], ['p', 'git checkout main'], ['p', 'git pull'], [],
       ['c', 'Make a branch for your task'], ['p', 'git checkout -b feature/product-list'], [],

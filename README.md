@@ -40,14 +40,32 @@ cd AGP-Inventory-System
 
 ## Run it locally
 
+**How to run these commands**
+
+1. Open a terminal **in the repository folder** (the one that contains `run-dev.bat`):
+   - **VS Code:** *File → Open Folder* → pick `AGP-Inventory-System`, then *Terminal → New Terminal*.
+   - **File Explorer:** open the folder, click the address bar, type `cmd`, press Enter.
+2. Type a command below and press Enter. Start with `.\run-dev.bat check`.
+
+> Type it **with `.\` in front** – VS Code's terminal is PowerShell, which only runs files from the current
+> folder when you write `.\`. (In Command Prompt `run-dev.bat check` also works.)
+> Double-clicking `run-dev.bat` runs the default (server + app).
+
 ```bash
-run-dev.bat check            # are git, node, npm, dotnet installed? are .env and ca.pem in place?
-run-dev.bat setup            # first time: npm install + create tables + sample data
-run-dev.bat                  # start the Express server, then the C# app
-run-dev.bat server           # only the server   (http://localhost:3000)
-run-dev.bat client           # only the C# app   (talks to http://localhost:3000/)
-run-dev.bat client MahApps   # open the app on a specific page
+.\run-dev.bat check            # are git, node, npm, dotnet installed? are .env and ca.pem in place?
+.\run-dev.bat setup            # first time: npm install + create tables + sample data
+.\run-dev.bat                  # start the Express server, then the C# app
+.\run-dev.bat server           # only the server   (http://localhost:3000)
+.\run-dev.bat client           # only the C# app   (talks to http://localhost:3000/)
+.\run-dev.bat client MahApps   # open the app on a specific page
+.\run-dev.bat clean            # delete C# build folders (bin/obj) – fixes most strange build errors
 ```
+
+| Problem | Fix |
+|---------|-----|
+| `'run-dev.bat' is not recognized` | Type `.\run-dev.bat`, and make sure the terminal is in the repository folder (`cd` into it). |
+| `Object reference not set to an instance of an object` while building | `.\run-dev.bat clean`, then `.\run-dev.bat check` – the C# app needs the **.NET 10 SDK**. `run-dev` already cleans and retries once automatically. |
+| The app shows an *unexpected error* window | The message says where it happened; the full details are in `%LOCALAPPDATA%\AGP Inventory\error.log` – send that file when asking for help. |
 
 Before `setup`: copy `server/.env.example` to `server/.env`, paste your Aiven `DATABASE_URL`,
 and save the Aiven CA certificate as `server/certs/ca.pem` (see [database/README.md](database/README.md)).
@@ -85,7 +103,7 @@ The database password lives only on the server (in environment variables).
 ```
 AGP-Inventory-System/
 ├── README.md                 ← you are here
-├── run-dev.bat / run-dev.ps1 ← run everything locally
+├── .\run-dev.bat / run-dev.ps1 ← run everything locally
 │
 ├── client/                   ← C# app  (open AppClient.slnx in Visual Studio)
 │   ├── AppClient/
