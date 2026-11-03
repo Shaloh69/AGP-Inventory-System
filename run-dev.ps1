@@ -113,7 +113,7 @@ function Invoke-Check {
     else { Write-Warn "server/certs/ca.pem missing - download the CA certificate from Aiven" }
 
     if (Test-Path (Join-Path $ServerDir "node_modules")) { Write-Ok "server packages installed" }
-    else { Write-Warn "server packages not installed - run: run-dev.bat setup" }
+    else { Write-Warn "server packages not installed - run: .\run-dev.bat setup" }
 
     return $ok
 }
