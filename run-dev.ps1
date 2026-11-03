@@ -1,5 +1,5 @@
 <#
-  run-dev.ps1 – run the whole project on your PC for testing.
+  run-dev.ps1 - run the whole project on your PC for testing.
 
   Usage (from the repository root):
       .\run-dev.bat                  check tools, start the server, then the C# app
@@ -144,9 +144,20 @@ function Test-ServerUp {
 function Start-Server {
     Write-Step "Starting the Express server"
     if (Test-ServerUp) { Write-Ok "Server already running at $HealthUrl"; return $true }
-    if (-not (Test-Path (Join-Path $ServerDir "node_modules"))) {
-        Write-Warn "Server packages are not installed - run: run-dev.bat setup"
+
+    # Without .env the server cannot connect to the database, so do not start it at all.
+    if (-not (Test-Path (Join-Path $ServerDir ".env"))) {
+        Write-Warn "Skipped: server\.env does not exist yet."
+        Write-Host "         1. Copy server\.env.example to server\.env and paste your Aiven DATABASE_URL"
+        Write-Host "         2. Save the Aiven CA certificate as server\certs\ca.pem"
+        Write-Host "         3. Run: .\run-dev.bat setup"
+        Write-Host "         The app will still open; Home will say the server is not reachable."
         return $false
+    }
+
+    if (-not (Test-Path (Join-Path $ServerDir "node_modules"))) {
+        Write-Host "  Installing server packages (first run only)..."
+        Push-Location $ServerDir; npm install; Pop-Location
     }
 
     # Run the server in its own window so its logs stay visible. Close that window to stop it.
